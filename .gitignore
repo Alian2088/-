@@ -1,0 +1,8 @@
+# 环境变量(含真实 key)绝不上传
+.env
+.env.*
+!env.example
+# 依赖/日志/统计
+node_modules/
+*.log
+stats.json

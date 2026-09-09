@@ -208,18 +208,22 @@ app.listen(PORT, () => {
   console.log('[stats] | 数据统计：总请求 ' + _st.requests + ' | 成功 ' + _st.success + ' | 失败 ' + _st.fail + ' | 今日费用 ¥' + _st.costDay.toFixed(4) + ' | 累计费用 ¥' + _st.costTotal.toFixed(4) + ' | 重置统计 ' + (_st.resetCount || 0) + ' |')
 })
 
-// 控制台输入 reload → 重置统计
-const readline = require('readline')
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-rl.on('line', line => {
-  const t = (line || '').trim().toLowerCase()
-  if (t === 'reload' || t === 'reset' || t === '重置') {
-    const prev = loadStats()
-    const rc = (prev.resetCount || 0) + 1
-    const fresh = { today: todayKey(), requests: 0, success: 0, fail: 0, tokIn: 0, tokOut: 0, costTotal: 0, costDay: 0, resetCount: rc }
-    saveStats(fresh)
-    console.log('[stats] | 数据统计：总请求 0 | 成功 0 | 失败 0 | 今日费用 ¥0.0000 | 累计费用 ¥0.0000 | 重置统计 ' + rc + ' |')
-  } else if (t) {
-    console.log('[stats] 输入 reload 重置统计')
-  }
-})
+// 控制台输入 reload → 重置统计(容器内无 stdin 则安全跳过)
+if (process.stdin && typeof process.stdin.on === 'function') {
+  try {
+    const readline = require('readline')
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+    rl.on('line', line => {
+      const t = (line || '').trim().toLowerCase()
+      if (t === 'reload' || t === 'reset' || t === '重置') {
+        const prev = loadStats()
+        const rc = (prev.resetCount || 0) + 1
+        const fresh = { today: todayKey(), requests: 0, success: 0, fail: 0, tokIn: 0, tokOut: 0, costTotal: 0, costDay: 0, resetCount: rc }
+        saveStats(fresh)
+        console.log('[stats] | 数据统计：总请求 0 | 成功 0 | 失败 0 | 今日费用 ¥0.0000 | 累计费用 ¥0.0000 | 重置统计 ' + rc + ' |')
+      } else if (t) {
+        console.log('[stats] 输入 reload 重置统计')
+      }
+    })
+  } catch (e) { /* 容器内无 stdin 忽略 */ }
+}
